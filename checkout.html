@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout – LeafNest</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="leaf">🌿</span><span>LeafNest</span></a>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="location.href='cart.html'">🛒 Cart <span class="cart-count">0</span></button>
+  </div>
+</nav>
+
+<!-- Steps -->
+<div style="background:#fff;padding:1rem 2rem;display:flex;justify-content:center;gap:0;border-bottom:1px solid #e5e7eb;">
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <span style="background:var(--green);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">1</span>
+    <span style="font-weight:600;color:var(--green);font-size:.9rem">Delivery</span>
+  </div>
+  <div style="width:60px;height:2px;background:#e5e7eb;margin:0 .5rem;align-self:center"></div>
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <span style="background:#e5e7eb;color:#9ca3af;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">2</span>
+    <span style="color:#9ca3af;font-size:.9rem">Payment</span>
+  </div>
+  <div style="width:60px;height:2px;background:#e5e7eb;margin:0 .5rem;align-self:center"></div>
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <span style="background:#e5e7eb;color:#9ca3af;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">3</span>
+    <span style="color:#9ca3af;font-size:.9rem">Confirm</span>
+  </div>
+</div>
+
+<div class="page-container">
+  <div class="page-title">Delivery Details</div>
+  <div class="checkout-grid">
+    <div class="form-card">
+      <h3>📦 Shipping Address</h3>
+      <form id="checkout-form">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="fullname" placeholder="Enter your full name" required />
+        </div>
+        <div class="form-group">
+          <label>Mobile Number *</label>
+          <input type="tel" id="mobile" placeholder="10-digit mobile number" pattern="[0-9]{10}" required />
+        </div>
+        <div class="form-group">
+          <label>Address *</label>
+          <textarea id="address" rows="2" placeholder="House no, Street, Area" required style="resize:vertical"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City *</label>
+            <input type="text" id="city" placeholder="City" required />
+          </div>
+          <div class="form-group">
+            <label>State *</label>
+            <input type="text" id="state" placeholder="State" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Pincode *</label>
+          <input type="text" id="pincode" placeholder="6-digit pincode" pattern="[0-9]{6}" required />
+        </div>
+        <button type="submit" class="btn-full">Continue to Payment →</button>
+      </form>
+    </div>
+
+    <div>
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <div id="order-items"></div>
+        <div id="order-totals"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  if (!getCurrentUser()) location.replace('login.html?redirect=checkout.html');
+  updateCartCount();
+
+  const user = getCurrentUser();
+  if (!user) location.href = 'login.html?redirect=checkout.html';
+
+  const cart = getCart();
+  if (cart.length === 0) location.href = 'cart.html';
+
+  // Pre-fill name
+  if (user) document.getElementById('fullname').value = user.name || '';
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const shipping = subtotal >= 999 ? 0 : 99;
+  const total = subtotal + shipping;
+
+  document.getElementById('order-items').innerHTML = cart.map(i =>
+    `<div class="summary-row"><span>${i.name} x${i.qty}</span><span>₹${i.price * i.qty}</span></div>`
+  ).join('');
+
+  document.getElementById('order-totals').innerHTML = `
+    <div class="summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+    <div class="summary-row"><span>Shipping</span><span>${shipping === 0 ? 'Free' : '₹' + shipping}</span></div>
+    <div class="summary-row total"><span>Total</span><span>₹${total}</span></div>
+  `;
+
+  document.getElementById('checkout-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const address = {
+      fullname: document.getElementById('fullname').value.trim(),
+      mobile: document.getElementById('mobile').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      city: document.getElementById('city').value.trim(),
+      state: document.getElementById('state').value.trim(),
+      pincode: document.getElementById('pincode').value.trim(),
+    };
+    localStorage.setItem('plantstore_checkout_address', JSON.stringify(address));
+    localStorage.setItem('plantstore_checkout_total', total);
+    location.href = 'payment.html';
+  });
+</script>
+</body>
+</html>

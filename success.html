@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed – LeafNest</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="success-container">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <h2>Order Successful!</h2>
+    <p>Your plants are on their way. Thank you for shopping with LeafNest!</p>
+
+    <div class="order-details" id="order-details"></div>
+
+    <div style="display:flex;flex-direction:column;gap:.8rem;margin-top:1.5rem">
+      <a href="index.html" class="btn-primary" style="text-align:center">Continue Shopping 🌿</a>
+      <a href="cart.html" style="text-align:center;color:var(--text-muted);font-size:.88rem;text-decoration:none">View Cart</a>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const order = JSON.parse(localStorage.getItem('plantstore_last_order') || 'null');
+  if (!order) { location.href = 'index.html'; }
+
+  const methodLabels = { cod: '💵 Cash on Delivery', upi: '📱 UPI Payment', card: '💳 Debit/Credit Card' };
+  document.getElementById('order-details').innerHTML = `
+    <div class="row"><span>Order ID</span><span style="font-weight:700">${order.id}</span></div>
+    <div class="row"><span>Date</span><span>${order.date}</span></div>
+    <div class="row"><span>Items</span><span>${order.items.length} plant(s)</span></div>
+    <div class="row"><span>Payment</span><span>${methodLabels[order.paymentMethod] || order.paymentMethod}</span></div>
+    <div class="row"><span>Deliver to</span><span>${order.address.city}, ${order.address.state}</span></div>
+    <div class="row"><span>Total Paid</span><span>₹${order.total}</span></div>
+  `;
+</script>
+</body>
+</html>

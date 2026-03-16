@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up – LeafNest</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="leaf">🌿</span><span>LeafNest</span></a>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="location.href='cart.html'">🛒 Cart <span class="cart-count">0</span></button>
+  </div>
+</nav>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div style="font-size:2.5rem;text-align:center;margin-bottom:.5rem">🌱</div>
+    <h2 style="text-align:center">Create Account</h2>
+    <p style="text-align:center">Join LeafNest and start your green journey</p>
+    <div id="error-msg" style="background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:8px;font-size:.88rem;margin-bottom:1rem;display:none"></div>
+    <form id="signup-form">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="Your full name" required />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div style="position:relative">
+          <input type="password" id="password" placeholder="Min 6 characters" required minlength="6" style="padding-right:2.5rem;width:100%;box-sizing:border-box" />
+          <span onclick="togglePass('password','eye1')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1.1rem;user-select:none" id="eye1">👁️</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <div style="position:relative">
+          <input type="password" id="confirm-password" placeholder="Repeat your password" required style="padding-right:2.5rem;width:100%;box-sizing:border-box" />
+          <span onclick="togglePass('confirm-password','eye2')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1.1rem;user-select:none" id="eye2">👁️</span>
+        </div>
+      </div>
+      <button type="submit" class="btn-full">Create Account</button>
+    </form>
+    <div class="auth-switch">Already have an account? <a href="login.html">Sign in</a></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  updateCartCount();
+  function togglePass(id, eyeId) {
+    const inp = document.getElementById(id);
+    const eye = document.getElementById(eyeId);
+    if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
+    else { inp.type = 'password'; eye.textContent = '👁️'; }
+  }
+  document.getElementById('signup-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const name     = document.getElementById('name').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm-password').value;
+    const errEl    = document.getElementById('error-msg');
+    const btn      = this.querySelector('button[type=submit]');
+
+    if (password !== confirm) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.style.display = 'block'; return;
+    }
+    if (password.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.style.display = 'block'; return;
+    }
+
+    btn.textContent = 'Creating account...'; btn.disabled = true;
+
+    const result = await signupUser(name, email, password);
+    if (result.success) {
+      localStorage.setItem('plantstore_current_user', JSON.stringify(result.user));
+      location.href = 'index.html';
+    } else {
+      errEl.textContent = result.message || 'Signup failed. Try again.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Create Account'; btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

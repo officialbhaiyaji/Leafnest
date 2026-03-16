@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment – LeafNest</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="leaf">🌿</span><span>LeafNest</span></a>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="location.href='cart.html'">🛒 Cart <span class="cart-count">0</span></button>
+  </div>
+</nav>
+
+<!-- Steps -->
+<div style="background:#fff;padding:1rem 2rem;display:flex;justify-content:center;gap:0;border-bottom:1px solid #e5e7eb;">
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <span style="background:var(--green-light);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">✓</span>
+    <span style="color:var(--green-light);font-size:.9rem">Delivery</span>
+  </div>
+  <div style="width:60px;height:2px;background:var(--green);margin:0 .5rem;align-self:center"></div>
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <span style="background:var(--green);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">2</span>
+    <span style="font-weight:600;color:var(--green);font-size:.9rem">Payment</span>
+  </div>
+  <div style="width:60px;height:2px;background:#e5e7eb;margin:0 .5rem;align-self:center"></div>
+  <div style="display:flex;align-items:center;gap:.5rem">
+    <span style="background:#e5e7eb;color:#9ca3af;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">3</span>
+    <span style="color:#9ca3af;font-size:.9rem">Confirm</span>
+  </div>
+</div>
+
+<div class="page-container">
+  <div class="page-title">Choose Payment</div>
+  <div class="checkout-grid">
+    <div class="form-card">
+      <h3>💳 Payment Method</h3>
+      <div class="payment-options">
+        <label class="payment-option selected" id="opt-cod" onclick="selectPayment('cod')">
+          <input type="radio" name="payment" value="cod" checked />
+          <div>
+            <div class="payment-option-label">💵 Cash on Delivery</div>
+            <div class="payment-option-sub">Pay when your plants arrive</div>
+          </div>
+        </label>
+        <label class="payment-option" id="opt-upi" onclick="selectPayment('upi')">
+          <input type="radio" name="payment" value="upi" />
+          <div>
+            <div class="payment-option-label">📱 Razorpay</div>
+            <div class="payment-option-sub">UPI, Card, Netbanking via Razorpay</div>
+          </div>
+        </label>
+        <label class="payment-option" id="opt-card" onclick="selectPayment('card')">
+          <input type="radio" name="payment" value="card" />
+          <div>
+            <div class="payment-option-label">💳 Debit / Credit Card</div>
+            <div class="payment-option-sub">Visa, Mastercard, RuPay</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- COD -->
+      <div id="details-cod" class="payment-details">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">💵</div>
+        <div style="font-weight:600;color:var(--green)">Cash on Delivery</div>
+        <div style="font-size:.88rem;color:var(--text-muted);margin-top:.3rem">Pay in cash when your order is delivered. No extra charges.</div>
+      </div>
+
+      <!-- UPI / Razorpay -->
+      <div id="details-upi" class="payment-details" style="display:none">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">📱</div>
+        <div style="font-weight:600;color:var(--green);margin-bottom:.5rem">Pay via Razorpay</div>
+        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">UPI, Debit/Credit Card, Netbanking — all in one secure popup.</div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font-size:.82rem;color:#166534;">
+          🧪 <strong>Test Mode:</strong> Use card <code>4111 1111 1111 1111</code>, any future expiry, CVV <code>123</code>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div id="details-card" class="payment-details" style="display:none">
+        <div style="font-size:1.5rem;margin-bottom:.8rem">💳</div>
+        <div class="form-group">
+          <label>Card Number *</label>
+          <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expiry Date *</label>
+            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)" />
+          </div>
+          <div class="form-group">
+            <label>CVV *</label>
+            <input type="password" id="card-cvv" placeholder="•••" maxlength="3" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Card Holder Name *</label>
+          <input type="text" id="card-name" placeholder="Name on card" />
+        </div>
+      </div>
+
+      <div id="pay-error" style="background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:8px;font-size:.88rem;margin-bottom:1rem;display:none"></div>
+      <button class="btn-full" onclick="processPayment()">🔒 Pay Now</button>
+    </div>
+
+    <div>
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <div id="order-items"></div>
+        <div id="order-total-display"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="processing-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+  <div style="background:#fff;border-radius:16px;padding:2.5rem;text-align:center;max-width:320px">
+    <div style="font-size:3rem;margin-bottom:1rem">⏳</div>
+    <div style="font-weight:700;font-size:1.1rem;color:var(--green)">Processing Payment...</div>
+    <div style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem">Please wait a moment</div>
+    <div style="margin-top:1.2rem;height:4px;background:var(--green-pale);border-radius:50px;overflow:hidden">
+      <div id="progress-bar" style="height:100%;background:var(--green);width:0%;transition:width 2s;border-radius:50px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="data.js"></script>
+
+<script>
+  if (!getCurrentUser()) location.replace('login.html?redirect=payment.html');
+  updateCartCount();
+  const cart = getCart();
+  const total = parseFloat(localStorage.getItem('plantstore_checkout_total') || 0);
+  if (cart.length === 0) location.href = 'cart.html';
+
+  document.getElementById('order-items').innerHTML = cart.map(i =>
+    `<div class="summary-row"><span>${i.name} x${i.qty}</span><span>₹${i.price * i.qty}</span></div>`
+  ).join('');
+  document.getElementById('order-total-display').innerHTML = `<div class="summary-row total"><span>Total</span><span>₹${total}</span></div>`;
+
+  let selectedMethod = 'cod';
+  function selectPayment(method) {
+    selectedMethod = method;
+    ['cod','upi','card'].forEach(m => {
+      document.getElementById('opt-' + m).classList.toggle('selected', m === method);
+      document.getElementById('details-' + m).style.display = m === method ? 'block' : 'none';
+    });
+  }
+
+  function formatCard(el) {
+    let v = el.value.replace(/\D/g,'').substring(0,16);
+    el.value = v.replace(/(.{4})/g,'$1 ').trim();
+  }
+  function formatExpiry(el) {
+    let v = el.value.replace(/\D/g,'');
+    if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+    el.value = v;
+  }
+
+  function processPayment() {
+    const errEl = document.getElementById('pay-error');
+    errEl.style.display = 'none';
+
+    if (selectedMethod === 'upi') {
+      // Open Razorpay popup
+      const user = getCurrentUser();
+      const options = {
+        key: 'rzp_test_1DP5mmOlF5G5ag', // Razorpay public test key
+        amount: Math.round(total * 100),  // in paise
+        currency: 'INR',
+        name: 'LeafNest',
+        description: 'Plant Order Payment',
+        image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=80&h=80&fit=crop',
+        prefill: {
+          name:  user?.name  || '',
+          email: user?.email || '',
+        },
+        theme: { color: '#2d6a4f' },
+        handler: function(response) {
+          // Payment successful
+          completeOrder('razorpay', response.razorpay_payment_id);
+        },
+        modal: {
+          ondismiss: function() {
+            errEl.textContent = 'Payment cancelled. Please try again.';
+            errEl.style.display = 'block';
+          }
+        }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+      return;
+    }
+
+    if (selectedMethod === 'card') {
+      const num  = document.getElementById('card-number').value.replace(/\s/g,'');
+      const exp  = document.getElementById('card-expiry').value;
+      const cvv  = document.getElementById('card-cvv').value;
+      const name = document.getElementById('card-name').value.trim();
+      if (num.length < 16 || !exp.includes('/') || cvv.length < 3 || !name) {
+        errEl.textContent = 'Please fill all card details correctly.';
+        errEl.style.display = 'block'; return;
+      }
+    }
+
+    // COD or Card — show processing overlay
+    const overlay = document.getElementById('processing-overlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { document.getElementById('progress-bar').style.width = '100%'; }, 100);
+    setTimeout(() => completeOrder(selectedMethod, null), 2500);
+  }
+
+  async function completeOrder(method, paymentId) {
+    const address = JSON.parse(localStorage.getItem('plantstore_checkout_address') || '{}');
+    const orderId = 'LN' + Date.now().toString().slice(-8);
+    const order = {
+      id: orderId,
+      items: cart,
+      total,
+      address,
+      paymentMethod: method,
+      paymentId: paymentId || null,
+      status: 'Confirmed',
+      date: new Date().toLocaleDateString('en-IN'),
+      customer: getCurrentUser()?.name || 'Guest'
+    };
+    await saveOrderToDB(order);
+    saveOrder(order);
+    localStorage.setItem('plantstore_last_order', JSON.stringify(order));
+    saveCart([]);
+    location.href = 'success.html';
+  }
+</script>
+</body>
+</html>

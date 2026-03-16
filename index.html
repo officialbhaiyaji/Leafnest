@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeafNest – Premium Plant Store</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="leaf">🌿</span>
+    <span>LeafNest</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#products">Plants</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="location.href='cart.html'">
+      🛒 Cart <span class="cart-count">0</span>
+    </button>
+    <a href="admin.html" style="background:#1b4332;color:#fff;border:none;padding:8px 18px;border-radius:50px;font-family:'Poppins',sans-serif;font-weight:600;font-size:.88rem;text-decoration:none;transition:background .2s;" onmouseover="this.style.background='#2d6a4f'" onmouseout="this.style.background='#1b4332'">⚙️ Admin</a>
+    <span id="nav-user-area"></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div style="font-size:3.5rem">🌱</div>
+  <h1>Bring Nature<br>Into Your Home</h1>
+  <p>Handpicked plants delivered fresh to your doorstep. Breathe better, live greener.</p>
+  <a href="#products" class="btn-primary">Shop Plants</a>
+</section>
+
+<!-- FEATURES -->
+<div style="background:#fff; padding: 2rem; display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; border-bottom: 1px solid #e5e7eb;">
+  <div style="text-align:center">
+    <div style="font-size:2rem">🚚</div>
+    <div style="font-weight:600; color:var(--green)">Free Delivery</div>
+    <div style="font-size:.8rem; color:var(--text-muted)">On orders above ₹999</div>
+  </div>
+  <div style="text-align:center">
+    <div style="font-size:2rem">🌿</div>
+    <div style="font-weight:600; color:var(--green)">100% Healthy</div>
+    <div style="font-size:.8rem; color:var(--text-muted)">Nursery fresh plants</div>
+  </div>
+  <div style="text-align:center">
+    <div style="font-size:2rem">♻️</div>
+    <div style="font-weight:600; color:var(--green)">Eco Packaging</div>
+    <div style="font-size:.8rem; color:var(--text-muted)">Sustainable materials</div>
+  </div>
+  <div style="text-align:center">
+    <div style="font-size:2rem">💬</div>
+    <div style="font-weight:600; color:var(--green)">Expert Support</div>
+    <div style="font-size:.8rem; color:var(--text-muted)">Plant care guidance</div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="section" id="products">
+  <div class="section-title">Our Plants</div>
+  <div class="section-sub">Curated collection of indoor, outdoor & exotic plants</div>
+  <div class="categories" id="cat-filters"></div>
+  <div class="product-grid" id="product-grid"></div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" style="background: linear-gradient(135deg,#d8f3dc,#b7e4c7); padding:60px 2rem; text-align:center;">
+  <div style="max-width:600px; margin:0 auto;">
+    <div style="font-size:3rem">🌳</div>
+    <h2 style="font-size:1.8rem; color:var(--green); margin:.5rem 0;">Why LeafNest?</h2>
+    <p style="color:var(--green-mid); line-height:1.8;">We source plants directly from certified nurseries, ensuring every plant arrives healthy and vibrant. Our plant experts are always ready to help you find the perfect green companion for your space.</p>
+  </div>
+</div>
+
+<footer>
+  <p>🌿 LeafNest &copy; 2026 — Grow Green, Live Clean</p>
+  <p style="margin-top:.5rem; font-size:.8rem;"><a href="admin.html">Admin Panel</a></p>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script src="data.js"></script>
+<script>
+  // Nav user area
+  const user = getCurrentUser();
+  const navArea = document.getElementById('nav-user-area');
+  if (user) {
+    navArea.innerHTML = `<span style="font-size:.9rem;color:var(--green);font-weight:500">Hi, ${user.name.split(' ')[0]}</span>
+    <button class="btn-nav-login" style="margin-left:.5rem" onclick="logout()">Logout</button>`;
+  } else {
+    navArea.innerHTML = `<a href="login.html" class="btn-nav-login">Login</a>`;
+  }
+  function logout() {
+    localStorage.removeItem('plantstore_current_user');
+    location.reload();
+  }
+
+  updateCartCount();
+
+  const categories = ['All', 'Indoor', 'Outdoor', 'Succulent', 'Tropical'];
+  let activeCategory = 'All';
+
+  function renderCategories() {
+    const el = document.getElementById('cat-filters');
+    el.innerHTML = categories.map(c =>
+      `<button class="cat-chip ${c === activeCategory ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>`
+    ).join('');
+  }
+
+  function filterCat(cat) {
+    activeCategory = cat;
+    renderCategories();
+    renderProducts();
+  }
+
+  function renderProducts() {
+    const products = getProducts();
+    const filtered = activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory);
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = filtered.map(p => `
+      <div class="product-card">
+        ${p.image
+          ? `<img class="product-img" src="${p.image}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="product-img-placeholder" style="display:none">${p.emoji || '🌿'}</div>`
+          : `<div class="product-img-placeholder">${p.emoji || '🌿'}</div>`
+        }
+        <div class="product-info">
+          <div class="product-category">${p.category}</div>
+          <div class="product-name">${p.name}</div>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:2px">${p.description || ''}</div>
+          <div class="product-price">₹${p.price}</div>
+        </div>
+        <button class="btn-cart" id="btn-${p.id}" onclick="handleAddToCart(${p.id})">🛒 Add to Cart</button>
+      </div>
+    `).join('');
+  }
+
+  function handleAddToCart(id) {
+    addToCart(id);
+    const btn = document.getElementById('btn-' + id);
+    btn.textContent = '✓ Added';
+    btn.classList.add('added');
+    setTimeout(() => { btn.textContent = '🛒 Add to Cart'; btn.classList.remove('added'); }, 1500);
+    showToast('Plant added to cart! 🌿');
+  }
+
+  renderCategories();
+  renderProducts();
+</script>
+</body>
+</html>

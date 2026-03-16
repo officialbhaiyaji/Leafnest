@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – LeafNest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Poppins',sans-serif;background:#f0faf4;color:#1b1b1b;}
+    /* SIDEBAR */
+    .sidebar{width:240px;background:#2d6a4f;position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+    .sidebar-logo{padding:18px 20px;background:rgba(0,0,0,.15);display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.15);}
+    .sidebar-logo span{color:#fff;font-size:1.1rem;font-weight:700;}
+    .sidebar-nav{flex:1;padding:8px 0;}
+    .nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:14px 20px;background:none;border:none;border-left:3px solid transparent;color:rgba(255,255,255,.85);font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:500;cursor:pointer;text-align:left;transition:all .2s;}
+    .nav-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-left-color:rgba(255,255,255,.4);}
+    .nav-btn.active{background:rgba(255,255,255,.2);color:#fff;border-left-color:#fff;font-weight:600;}
+    .nav-btn .ni{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
+    .nav-btn .nt{font-size:.92rem;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.15);}
+    .sidebar-footer a{display:block;color:rgba(255,255,255,.7);font-size:.85rem;text-decoration:none;margin-bottom:6px;}
+    .sidebar-footer a.green-link{color:#95d5b2;font-weight:600;}
+    /* MAIN */
+    .main{margin-left:240px;padding:2rem;min-height:100vh;width:calc(100% - 240px);}
+    .main-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.8rem;}
+    .main-header h1{font-size:1.6rem;font-weight:700;color:#2d6a4f;}
+    /* SECTIONS */
+    .section{display:none;}
+    .section.active{display:block;}
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:1.8rem;}
+    .stat-card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(45,106,79,.1);padding:1.4rem;display:flex;align-items:center;gap:1rem;}
+    .stat-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;}
+    .stat-info h3{font-size:1.5rem;font-weight:700;}
+    .stat-info p{font-size:.82rem;color:#6b7280;}
+    /* CARD */
+    .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(45,106,79,.1);padding:1.4rem;margin-bottom:1.4rem;}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;}
+    .card-header h3{font-size:1.05rem;font-weight:700;color:#2d6a4f;}
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;font-size:.88rem;}
+    th{background:#d8f3dc;color:#2d6a4f;font-weight:600;padding:10px 12px;text-align:left;}
+    td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+    tr:hover td{background:#f8fdf9;}
+    /* BADGE */
+    .badge{padding:3px 10px;border-radius:50px;font-size:.75rem;font-weight:600;display:inline-block;}
+    .badge-green{background:#d8f3dc;color:#2d6a4f;}
+    .badge-yellow{background:#fef9c3;color:#92400e;}
+    .badge-red{background:#fee2e2;color:#dc2626;}
+    /* BUTTONS */
+    .btn{border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-green{background:#2d6a4f;color:#fff;padding:9px 18px;font-size:.88rem;}
+    .btn-green:hover{background:#40916c;}
+    .btn-yellow{background:#d97706;color:#fff;padding:7px 12px;font-size:.82rem;}
+    .btn-yellow:hover{background:#b45309;}
+    .btn-red{background:#dc2626;color:#fff;padding:7px 12px;font-size:.82rem;}
+    .btn-red:hover{background:#b91c1c;}
+    .btn-outline{background:none;border:2px solid #2d6a4f;color:#2d6a4f;padding:9px 18px;font-size:.88rem;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;}
+    /* MODAL */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+    .modal-bg.open{display:flex;}
+    .modal-box{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+    .modal-box h3{font-size:1.15rem;font-weight:700;color:#2d6a4f;margin-bottom:1.4rem;}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;font-weight:500;font-size:.88rem;margin-bottom:5px;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid #e5e7eb;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.9rem;outline:none;transition:border .2s;}
+    .form-group input:focus,.form-group select:focus{border-color:#52b788;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .modal-footer{display:flex;gap:.8rem;margin-top:1.4rem;}
+    /* CHART */
+    .bar-row{display:flex;align-items:center;gap:1rem;margin-bottom:.7rem;}
+    .bar-label{width:110px;font-size:.82rem;color:#6b7280;text-align:right;}
+    .bar-track{flex:1;background:#d8f3dc;border-radius:50px;height:18px;overflow:hidden;}
+    .bar-fill{height:100%;background:#2d6a4f;border-radius:50px;transition:width .6s;}
+    .bar-val{width:40px;font-size:.82rem;font-weight:600;color:#2d6a4f;}
+    /* ADMIN LOGIN */
+    .admin-login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1b4332 0%,#2d6a4f 50%,#40916c 100%);z-index:9999;display:flex;align-items:center;justify-content:center;}
+    .admin-login-box{background:#fff;border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;}
+    .admin-login-box .logo{font-size:3rem;margin-bottom:.5rem;}
+    .admin-login-box h2{font-size:1.4rem;font-weight:700;color:#2d6a4f;margin-bottom:.3rem;}
+    .admin-login-box p{font-size:.85rem;color:#6b7280;margin-bottom:1.5rem;}
+    .admin-login-box .form-group{text-align:left;margin-bottom:1rem;}
+    .admin-login-box label{display:block;font-weight:500;font-size:.85rem;margin-bottom:5px;color:#374151;}
+    .admin-login-box input{width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins',sans-serif;font-size:.9rem;outline:none;transition:border .2s;box-sizing:border-box;}
+    .admin-login-box input:focus{border-color:#52b788;}
+    .admin-login-box .pass-wrap{position:relative;}
+    .admin-login-box .pass-wrap input{padding-right:2.8rem;}
+    .admin-login-box .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1.1rem;user-select:none;background:none;border:none;}
+    .admin-login-btn{width:100%;padding:12px;background:#2d6a4f;color:#fff;border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;margin-top:.5rem;transition:background .2s;}
+    .admin-login-btn:hover{background:#40916c;}
+    .admin-login-error{background:#fee2e2;color:#dc2626;padding:9px 12px;border-radius:8px;font-size:.83rem;margin-bottom:1rem;display:none;}
+    .admin-login-hint{font-size:.78rem;color:#9ca3af;margin-top:1rem;}
+    /* RESPONSIVE */
+    @media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:640px){.sidebar{width:200px;}.main{margin-left:200px;padding:1rem;}}
+  </style>
+</head>
+<body>
+
+<!-- ═══ ADMIN LOGIN OVERLAY ═══ -->
+<div class="admin-login-overlay" id="admin-login-overlay">
+  <div class="admin-login-box">
+    <div class="logo">🌿</div>
+    <h2>Admin Panel</h2>
+    <p>Sign in to manage LeafNest</p>
+    <div class="admin-login-error" id="admin-err"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="admin-user" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="pass-wrap">
+        <input type="password" id="admin-pass" placeholder="Enter password" />
+        <button class="eye-btn" onclick="toggleAdminEye()" id="admin-eye">👁️</button>
+      </div>
+    </div>
+    <button class="admin-login-btn" onclick="adminLogin()">Sign In →</button>
+    <div class="admin-login-hint">Default: admin / admin123</div>
+  </div>
+</div>
+
+<div style="display:flex;min-height:100vh;">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span style="font-size:1.5rem;">🌿</span>
+      <span>LeafNest Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" onclick="show('dashboard',this)">
+        <span class="ni">📊</span><span class="nt">Dashboard</span>
+      </button>
+      <button class="nav-btn" onclick="show('products',this)">
+        <span class="ni">🌿</span><span class="nt">Products</span>
+      </button>
+      <button class="nav-btn" onclick="show('orders',this)">
+        <span class="ni">📦</span><span class="nt">Orders</span>
+      </button>
+      <button class="nav-btn" onclick="show('analytics',this)">
+        <span class="ni">📈</span><span class="nt">Analytics</span>
+      </button>
+      <button class="nav-btn" onclick="show('settings',this)">
+        <span class="ni">⚙️</span><span class="nt">Settings</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="nursery.html" class="green-link">🌱 Nursery Mgmt →</a>
+      <a href="index.html">← Back to Store</a>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="main-header">
+      <h1 id="page-title">Dashboard</h1>
+      <span id="page-date" style="font-size:.85rem;color:#6b7280;"></span>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div id="sec-dashboard" class="section active">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;">
+        <div class="card">
+          <div class="card-header"><h3>📋 Recent Orders</h3></div>
+          <div id="dash-orders"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>🏆 Top Products</h3></div>
+          <div id="dash-top"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS ── -->
+    <div id="sec-products" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3>🌿 All Products</h3>
+          <button class="btn btn-green" onclick="openProdModal()">+ Add Product</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Actions</th></tr></thead>
+            <tbody id="prod-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS ── -->
+    <div id="sec-orders" class="section">
+      <div class="card">
+        <div class="card-header"><h3>📦 All Orders</h3></div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Order ID</th><th>Customer</th><th>City</th><th>Payment</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div id="sec-analytics" class="section">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;">
+        <div class="card">
+          <div class="card-header"><h3>📊 Sales by Category</h3></div>
+          <div id="cat-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>📌 Key Metrics</h3></div>
+          <div id="metrics"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div id="sec-settings" class="section">
+      <div class="card" style="max-width:480px;">
+        <div class="card-header"><h3>⚙️ Store Settings</h3></div>
+        <div class="form-group"><label>Store Name</label><input type="text" value="LeafNest" /></div>
+        <div class="form-group"><label>Free Shipping Above (₹)</label><input type="number" value="999" /></div>
+        <div class="form-group"><label>Admin Email</label><input type="email" value="admin@leafnest.com" /></div>
+        <button class="btn btn-green" onclick="toast('Settings saved!')">Save Settings</button>
+        <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid #e5e7eb;">
+          <p style="font-weight:600;color:#dc2626;margin-bottom:.8rem;">Danger Zone</p>
+          <button class="btn btn-red" onclick="resetProds()">Reset Products</button>
+          <button class="btn btn-red" style="margin-left:.5rem;" onclick="clearOrds()">Clear Orders</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── PRODUCT MODAL ── -->
+<div class="modal-bg" id="prod-modal">
+  <div class="modal-box">
+    <h3 id="modal-title">Add Product</h3>
+    <input type="hidden" id="edit-id" />
+    <div class="form-group"><label>Plant Name *</label><input type="text" id="p-name" placeholder="e.g. Monstera Deliciosa" /></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label>
+        <select id="p-cat"><option>Indoor</option><option>Outdoor</option><option>Succulent</option><option>Tropical</option></select>
+      </div>
+      <div class="form-group"><label>Price (₹) *</label><input type="number" id="p-price" placeholder="499" min="1" /></div>
+    </div>
+    <div class="form-group"><label>Image URL</label><input type="url" id="p-img" placeholder="https://images.unsplash.com/..." /></div>
+    <div class="form-row">
+      <div class="form-group"><label>Emoji</label><input type="text" id="p-emoji" placeholder="🌿" maxlength="4" /></div>
+      <div class="form-group"><label>Description</label><input type="text" id="p-desc" placeholder="Short description" /></div>
+    </div>
+    <div id="modal-err" style="background:#fee2e2;color:#dc2626;padding:8px 12px;border-radius:8px;font-size:.85rem;display:none;margin-bottom:.5rem;"></div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeProdModal()">Cancel</button>
+      <button class="btn btn-green" style="flex:1;" onclick="saveProd()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-el" style="position:fixed;bottom:28px;right:28px;background:#2d6a4f;color:#fff;padding:13px 22px;border-radius:10px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;font-family:'Poppins',sans-serif;"></div>
+
+<script src="data.js"></script>
+<script>
+  // ── ADMIN LOGIN ──
+  const ADMIN_CREDS = { username: 'admin', password: 'admin123' };
+
+  function adminLogin() {
+    const user = document.getElementById('admin-user').value.trim();
+    const pass = document.getElementById('admin-pass').value;
+    const err  = document.getElementById('admin-err');
+    if (user === ADMIN_CREDS.username && pass === ADMIN_CREDS.password) {
+      sessionStorage.setItem('admin_logged_in', '1');
+      document.getElementById('admin-login-overlay').style.display = 'none';
+    } else {
+      err.textContent = 'Invalid username or password.';
+      err.style.display = 'block';
+    }
+  }
+
+  function toggleAdminEye() {
+    const inp = document.getElementById('admin-pass');
+    const eye = document.getElementById('admin-eye');
+    if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
+    else { inp.type = 'password'; eye.textContent = '👁️'; }
+  }
+
+  // Allow Enter key on login form
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && document.getElementById('admin-login-overlay').style.display !== 'none') {
+      adminLogin();
+    }
+  });
+
+  // Check if already logged in this session
+  if (sessionStorage.getItem('admin_logged_in') === '1') {
+    document.getElementById('admin-login-overlay').style.display = 'none';
+  }
+
+  document.getElementById('page-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const titles = {dashboard:'Dashboard',products:'Products',orders:'Orders',analytics:'Analytics',settings:'Settings'};
+
+  function show(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('page-title').textContent = titles[name];
+    if (name === 'dashboard') renderDash();
+    if (name === 'products')  renderProds();
+    if (name === 'orders')    renderOrders();
+    if (name === 'analytics') renderAnalytics();
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast-el');
+    el.textContent = msg;
+    el.style.transform = 'translateY(0)'; el.style.opacity = '1';
+    setTimeout(() => { el.style.transform = 'translateY(80px)'; el.style.opacity = '0'; }, 2500);
+  }
+
+  // ── DASHBOARD ──
+  function renderDash() {
+    const orders = getOrders(), products = getProducts(), users = getUsers();
+    const revenue = orders.reduce((s,o) => s + (parseFloat(o.total)||0), 0);
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><div class="stat-icon" style="background:#d8f3dc;">📦</div><div class="stat-info"><h3>${orders.length}</h3><p>Total Orders</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dbeafe;">💰</div><div class="stat-info"><h3>₹${revenue.toLocaleString('en-IN')}</h3><p>Revenue</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fef9c3;">👥</div><div class="stat-info"><h3>${users.length}</h3><p>Customers</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#ede9fe;">🌿</div><div class="stat-info"><h3>${products.length}</h3><p>Products</p></div></div>`;
+
+    const recent = [...orders].reverse().slice(0,5);
+    document.getElementById('dash-orders').innerHTML = recent.length === 0
+      ? '<p style="color:#6b7280;font-size:.9rem;">No orders yet.</p>'
+      : `<table><thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>
+          ${recent.map(o=>`<tr><td style="font-size:.8rem;">${o.id}</td><td>${o.customer||'Guest'}</td><td>₹${o.total}</td><td><span class="badge badge-green">${o.status}</span></td></tr>`).join('')}
+        </tbody></table>`;
+
+    const soldMap = {};
+    orders.forEach(o => (o.items||[]).forEach(i => { soldMap[i.name] = (soldMap[i.name]||0) + i.qty; }));
+    const top = Object.entries(soldMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    document.getElementById('dash-top').innerHTML = top.length === 0
+      ? '<p style="color:#6b7280;font-size:.9rem;">No sales data yet.</p>'
+      : top.map(([name,qty])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid #f0f0f0;"><span style="font-size:.9rem;">${name}</span><span class="badge badge-green">${qty} sold</span></div>`).join('');
+  }
+
+  // ── PRODUCTS ──
+  function renderProds() {
+    const products = getProducts();
+    document.getElementById('prod-tbody').innerHTML = products.map(p => `
+      <tr>
+        <td>${p.image ? `<img src="${p.image}" style="width:42px;height:42px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<span style=font-size:1.6rem>${p.emoji||'🌿'}</span>'" />` : `<span style="font-size:1.6rem;">${p.emoji||'🌿'}</span>`}</td>
+        <td style="font-weight:600;">${p.name}</td>
+        <td><span class="badge badge-green">${p.category}</span></td>
+        <td style="font-weight:700;color:#2d6a4f;">₹${p.price}</td>
+        <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+          <button class="btn btn-yellow" onclick="openEditProd(${p.id})">✏️ Edit</button>
+          <button class="btn btn-red" onclick="deleteProd(${p.id})">🗑 Delete</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // ── ORDERS ──
+  function renderOrders() {
+    const orders = getOrders();
+    const ml = {cod:'COD',upi:'UPI',card:'Card'};
+    document.getElementById('orders-tbody').innerHTML = orders.length === 0
+      ? '<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">No orders yet.</td></tr>'
+      : [...orders].reverse().map(o=>`
+          <tr>
+            <td style="font-size:.8rem;font-weight:600;">${o.id}</td>
+            <td>${o.customer||'Guest'}</td>
+            <td>${o.address?.city||'-'}</td>
+            <td>${ml[o.paymentMethod]||o.paymentMethod}</td>
+            <td style="font-weight:700;">₹${o.total}</td>
+            <td><span class="badge badge-green">${o.status}</span></td>
+            <td style="font-size:.82rem;">${o.date||'-'}</td>
+          </tr>`).join('');
+  }
+
+  // ── ANALYTICS ──
+  function renderAnalytics() {
+    const orders = getOrders(), products = getProducts();
+    const revenue = orders.reduce((s,o)=>s+(parseFloat(o.total)||0),0);
+    const totalSold = orders.reduce((s,o)=>s+(o.items||[]).reduce((ss,i)=>ss+i.qty,0),0);
+    const catMap = {};
+    orders.forEach(o=>(o.items||[]).forEach(i=>{
+      const p = products.find(pp=>pp.id===i.id);
+      const cat = p?.category||'Other';
+      catMap[cat]=(catMap[cat]||0)+i.qty;
+    }));
+    const maxVal = Math.max(...Object.values(catMap),1);
+    document.getElementById('cat-chart').innerHTML = Object.keys(catMap).length === 0
+      ? '<p style="color:#6b7280;font-size:.9rem;">No sales data yet.</p>'
+      : Object.entries(catMap).map(([cat,qty])=>`
+          <div class="bar-row">
+            <div class="bar-label">${cat}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(qty/maxVal*100).toFixed(0)}%;"></div></div>
+            <div class="bar-val">${qty}</div>
+          </div>`).join('');
+    document.getElementById('metrics').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:.7rem;">
+        ${[['Total Revenue','₹'+revenue.toLocaleString('en-IN')],['Total Orders',orders.length],['Plants Sold',totalSold],['Avg Order Value','₹'+(orders.length?Math.round(revenue/orders.length):0)],['Total Products',products.length],['Customers',getUsers().length]]
+          .map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid #f0f0f0;font-size:.92rem;"><span style="color:#6b7280;">${k}</span><span style="font-weight:700;color:#2d6a4f;">${v}</span></div>`).join('')}
+      </div>`;
+  }
+
+  // ── PRODUCT MODAL ──
+  function openProdModal() {
+    document.getElementById('modal-title').textContent = 'Add Product';
+    document.getElementById('edit-id').value = '';
+    ['p-name','p-price','p-img','p-emoji','p-desc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-cat').value = 'Indoor';
+    document.getElementById('modal-err').style.display = 'none';
+    document.getElementById('prod-modal').classList.add('open');
+  }
+  function openEditProd(id) {
+    const p = getProducts().find(p=>p.id===id); if(!p) return;
+    document.getElementById('modal-title').textContent = 'Edit Product';
+    document.getElementById('edit-id').value = p.id;
+    document.getElementById('p-name').value = p.name;
+    document.getElementById('p-cat').value = p.category;
+    document.getElementById('p-price').value = p.price;
+    document.getElementById('p-img').value = p.image||'';
+    document.getElementById('p-emoji').value = p.emoji||'';
+    document.getElementById('p-desc').value = p.description||'';
+    document.getElementById('modal-err').style.display = 'none';
+    document.getElementById('prod-modal').classList.add('open');
+  }
+  function closeProdModal() { document.getElementById('prod-modal').classList.remove('open'); }
+  function saveProd() {
+    const name = document.getElementById('p-name').value.trim();
+    const price = parseFloat(document.getElementById('p-price').value);
+    const errEl = document.getElementById('modal-err');
+    if (!name || !price || price<=0) { errEl.textContent='Name and valid price required.'; errEl.style.display='block'; return; }
+    const products = getProducts();
+    const editId = document.getElementById('edit-id').value;
+    const data = { name, price, category:document.getElementById('p-cat').value, image:document.getElementById('p-img').value.trim()||null, emoji:document.getElementById('p-emoji').value.trim()||'🌿', description:document.getElementById('p-desc').value.trim() };
+    if (editId) { const i=products.findIndex(p=>p.id===parseInt(editId)); if(i>-1) products[i]={...products[i],...data}; }
+    else { data.id=Date.now(); products.push(data); }
+    saveProducts(products);
+    closeProdModal();
+    renderProds();
+    toast(editId ? 'Product updated! ✅' : 'Product added! 🌿');
+  }
+  function deleteProd(id) {
+    if(!confirm('Delete this product?')) return;
+    saveProducts(getProducts().filter(p=>p.id!==id));
+    renderProds();
+    toast('Product deleted.');
+  }
+  function resetProds() {
+    if(!confirm('Reset all products to default?')) return;
+    localStorage.removeItem('plantstore_products');
+    renderProds();
+    toast('Products reset.');
+  }
+  function clearOrds() {
+    if(!confirm('Clear all orders?')) return;
+    localStorage.removeItem('plantstore_orders');
+    renderOrders();
+    toast('Orders cleared.');
+  }
+
+  document.getElementById('prod-modal').addEventListener('click', function(e){ if(e.target===this) closeProdModal(); });
+
+  // Init
+  renderDash();
+</script>
+</body>
+</html>

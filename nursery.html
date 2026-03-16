@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nursery Management – LeafNest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Poppins',sans-serif;background:#f0faf4;color:#1b1b1b;}
+    .sidebar{width:240px;background:#2d6a4f;position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+    .sidebar-logo{padding:18px 20px;background:rgba(0,0,0,.15);display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.15);}
+    .sidebar-logo span{color:#fff;font-size:1.05rem;font-weight:700;}
+    .sidebar-nav{flex:1;padding:8px 0;}
+    .nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:14px 20px;background:none;border:none;border-left:3px solid transparent;color:rgba(255,255,255,.85);font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:500;cursor:pointer;text-align:left;transition:all .2s;}
+    .nav-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-left-color:rgba(255,255,255,.4);}
+    .nav-btn.active{background:rgba(255,255,255,.2);color:#fff;border-left-color:#fff;font-weight:600;}
+    .nav-btn .ni{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.15);}
+    .sidebar-footer a{display:block;color:rgba(255,255,255,.7);font-size:.85rem;text-decoration:none;margin-bottom:6px;}
+    .main{margin-left:240px;padding:2rem;min-height:100vh;width:calc(100% - 240px);}
+    .main-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.8rem;}
+    .main-header h1{font-size:1.6rem;font-weight:700;color:#2d6a4f;}
+    .section{display:none;}
+    .section.active{display:block;}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:1.8rem;}
+    .stat-card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(45,106,79,.1);padding:1.4rem;display:flex;align-items:center;gap:1rem;}
+    .stat-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;}
+    .stat-info h3{font-size:1.5rem;font-weight:700;}
+    .stat-info p{font-size:.82rem;color:#6b7280;}
+    .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(45,106,79,.1);padding:1.4rem;margin-bottom:1.4rem;}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;}
+    .card-header h3{font-size:1.05rem;font-weight:700;color:#2d6a4f;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;}
+    table{width:100%;border-collapse:collapse;font-size:.88rem;}
+    th{background:#d8f3dc;color:#2d6a4f;font-weight:600;padding:10px 12px;text-align:left;}
+    td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+    tr:hover td{background:#f8fdf9;}
+    .badge{padding:3px 10px;border-radius:50px;font-size:.75rem;font-weight:600;display:inline-block;}
+    .badge-green{background:#d8f3dc;color:#2d6a4f;}
+    .badge-yellow{background:#fef9c3;color:#92400e;}
+    .badge-blue{background:#dbeafe;color:#1d4ed8;}
+    .badge-red{background:#fee2e2;color:#dc2626;}
+    .badge-purple{background:#ede9fe;color:#7c3aed;}
+    .btn{border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-green{background:#2d6a4f;color:#fff;padding:9px 18px;font-size:.88rem;}
+    .btn-green:hover{background:#40916c;}
+    .btn-yellow{background:#d97706;color:#fff;padding:7px 12px;font-size:.82rem;}
+    .btn-red{background:#dc2626;color:#fff;padding:7px 12px;font-size:.82rem;}
+    .btn-outline{background:none;border:2px solid #2d6a4f;color:#2d6a4f;padding:9px 18px;font-size:.88rem;border-radius:8px;font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;}
+    .grow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;}
+    .grow-card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(45,106,79,.1);padding:1.2rem;display:flex;flex-direction:column;gap:.6rem;}
+    .progress-track{background:#e5e7eb;border-radius:50px;height:10px;overflow:hidden;margin-top:3px;}
+    .progress-fill{height:100%;border-radius:50px;transition:width .5s;}
+    .schedule-item{background:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(45,106,79,.08);padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;margin-bottom:.8rem;}
+    .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.2rem;margin-bottom:1.4rem;}
+    .inv-card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(45,106,79,.1);padding:1.2rem;}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+    .modal-bg.open{display:flex;}
+    .modal-box{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+    .modal-box h3{font-size:1.15rem;font-weight:700;color:#2d6a4f;margin-bottom:1.4rem;}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;font-weight:500;font-size:.88rem;margin-bottom:5px;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid #e5e7eb;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.9rem;outline:none;transition:border .2s;}
+    .form-group input:focus,.form-group select:focus{border-color:#52b788;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .modal-footer{display:flex;gap:.8rem;margin-top:1.4rem;}
+    @media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}}
+    @media(max-width:640px){.sidebar{width:200px;}.main{margin-left:200px;width:calc(100% - 200px);padding:1rem;}}
+  </style>
+</head>
+<body>
+<div style="display:flex;min-height:100vh;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span style="font-size:1.5rem;">🌱</span>
+      <span>Nursery Mgmt</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" onclick="show('overview',this)">
+        <span class="ni">🏡</span><span>Overview</span>
+      </button>
+      <button class="nav-btn" onclick="show('plants',this)">
+        <span class="ni">🌿</span><span>Plant Batches</span>
+      </button>
+      <button class="nav-btn" onclick="show('fertilizer',this)">
+        <span class="ni">🧪</span><span>Fertilizer</span>
+      </button>
+      <button class="nav-btn" onclick="show('watering',this)">
+        <span class="ni">💧</span><span>Watering</span>
+      </button>
+      <button class="nav-btn" onclick="show('inventory',this)">
+        <span class="ni">📦</span><span>Inventory</span>
+      </button>
+      <button class="nav-btn" onclick="show('tasks',this)">
+        <span class="ni">✅</span><span>Tasks</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="admin.html">← Admin Panel</a>
+      <a href="index.html" style="color:#95d5b2;">🌿 Store</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <h1 id="page-title">Nursery Overview</h1>
+      <span id="page-date" style="font-size:.85rem;color:#6b7280;"></span>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="sec-overview" class="section active">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="two-col">
+        <div class="card"><div class="card-header"><h3>🗓️ Today's Tasks</h3></div><div id="today-tasks"></div></div>
+        <div class="card"><div class="card-header"><h3>⚠️ Alerts</h3></div><div id="alerts"></div></div>
+      </div>
+    </div>
+
+    <!-- PLANT BATCHES -->
+    <div id="sec-plants" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3>🌿 Plant Batches</h3>
+          <button class="btn btn-green" onclick="openBatch()">+ Add Batch</button>
+        </div>
+        <div class="grow-grid" id="batches-grid"></div>
+      </div>
+    </div>
+
+    <!-- FERTILIZER -->
+    <div id="sec-fertilizer" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3>🧪 Fertilizer Stock & Schedule</h3>
+          <button class="btn btn-green" onclick="openFert()">+ Add Fertilizer</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Name</th><th>Type</th><th>Stock (kg)</th><th>Last Applied</th><th>Next Due</th><th>Plants</th><th></th></tr></thead>
+            <tbody id="fert-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATERING -->
+    <div id="sec-watering" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3>💧 Watering Log</h3>
+        </div>
+
+        <!-- Inline Add Form -->
+        <div style="background:#f0faf4;border-radius:12px;padding:1.4rem;margin-bottom:1.4rem;border:2px solid #d8f3dc;">
+          <div style="font-weight:600;color:#2d6a4f;margin-bottom:1rem;font-size:.95rem;">➕ Log New Watering</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:1rem;align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label>Plant Batch</label>
+              <select id="w-batch" style="width:100%;padding:10px 14px;border:2px solid #d8f3dc;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.88rem;outline:none;background:#fff;"></select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Amount</label>
+              <input type="text" id="w-amount" placeholder="e.g. 5L" style="width:100%;padding:10px 14px;border:2px solid #d8f3dc;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.88rem;outline:none;" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Method</label>
+              <select id="w-method" style="width:100%;padding:10px 14px;border:2px solid #d8f3dc;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.88rem;outline:none;background:#fff;">
+                <option>Manual</option><option>Drip</option><option>Sprinkler</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Watered By</label>
+              <input type="text" id="w-by" placeholder="e.g. Ravi" style="width:100%;padding:10px 14px;border:2px solid #d8f3dc;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.88rem;outline:none;" />
+            </div>
+            <button class="btn btn-green" style="height:42px;padding:0 20px;white-space:nowrap;" onclick="logWater()">Log It</button>
+          </div>
+        </div>
+
+        <!-- Log List -->
+        <div id="water-list"></div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="sec-inventory" class="section">
+      <div class="inv-grid" id="inv-grid"></div>
+      <div class="card">
+        <div class="card-header"><h3>➕ Add / Update Supply</h3></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1rem;align-items:end;">
+          <div class="form-group" style="margin:0;"><label>Item Name</label><input type="text" id="inv-name" placeholder="e.g. Perlite" /></div>
+          <div class="form-group" style="margin:0;"><label>Category</label>
+            <select id="inv-cat"><option>Soil</option><option>Fertilizer</option><option>Tools</option><option>Pots</option><option>Pesticide</option><option>Other</option></select>
+          </div>
+          <div class="form-group" style="margin:0;"><label>Quantity</label><input type="number" id="inv-qty" placeholder="50" min="0" /></div>
+          <button class="btn btn-green" style="height:42px;" onclick="addInv()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div id="sec-tasks" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h3>✅ Task Manager</h3>
+          <button class="btn btn-green" onclick="openTask()">+ Add Task</button>
+        </div>
+        <div id="tasks-list"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- BATCH MODAL -->
+<div class="modal-bg" id="batch-modal">
+  <div class="modal-box">
+    <h3 id="batch-title">Add Plant Batch</h3>
+    <input type="hidden" id="batch-edit-id" />
+    <div class="form-row">
+      <div class="form-group"><label>Plant Name *</label><input type="text" id="b-name" placeholder="e.g. Monstera" /></div>
+      <div class="form-group"><label>Quantity *</label><input type="number" id="b-qty" placeholder="50" min="1" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Stage</label>
+        <select id="b-stage"><option>Seed</option><option>Seedling</option><option>Sapling</option><option>Mature</option><option>Ready to Sell</option></select>
+      </div>
+      <div class="form-group"><label>Location / Bed</label><input type="text" id="b-loc" placeholder="e.g. Greenhouse A" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sown Date</label><input type="date" id="b-sown" /></div>
+      <div class="form-group"><label>Expected Ready</label><input type="date" id="b-ready" /></div>
+    </div>
+    <div class="form-group"><label>Notes</label><input type="text" id="b-notes" placeholder="Special care notes" /></div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeBatch()">Cancel</button>
+      <button class="btn btn-green" style="flex:1;" onclick="saveBatch()">Save Batch</button>
+    </div>
+  </div>
+</div>
+
+<!-- FERTILIZER MODAL -->
+<div class="modal-bg" id="fert-modal">
+  <div class="modal-box">
+    <h3>Add Fertilizer</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Name *</label><input type="text" id="f-name" placeholder="e.g. NPK 20-20-20" /></div>
+      <div class="form-group"><label>Type</label>
+        <select id="f-type"><option>Organic</option><option>Chemical</option><option>Liquid</option><option>Granular</option><option>Compost</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Stock (kg)</label><input type="number" id="f-stock" placeholder="25" min="0" /></div>
+      <div class="form-group"><label>Next Due Date</label><input type="date" id="f-due" /></div>
+    </div>
+    <div class="form-group"><label>Applicable Plants</label><input type="text" id="f-plants" placeholder="e.g. All, Monstera" /></div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeFert()">Cancel</button>
+      <button class="btn btn-green" style="flex:1;" onclick="saveFert()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-bg" id="task-modal">
+  <div class="modal-box">
+    <h3>Add Task</h3>
+    <div class="form-group"><label>Task *</label><input type="text" id="t-name" placeholder="e.g. Repot Monstera batch" /></div>
+    <div class="form-row">
+      <div class="form-group"><label>Priority</label>
+        <select id="t-priority"><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="form-group"><label>Due Date</label><input type="date" id="t-due" /></div>
+    </div>
+    <div class="form-group"><label>Assigned To</label><input type="text" id="t-assign" placeholder="e.g. Ravi" /></div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeTask()">Cancel</button>
+      <button class="btn btn-green" style="flex:1;" onclick="saveTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-el" style="position:fixed;bottom:28px;right:28px;background:#2d6a4f;color:#fff;padding:13px 22px;border-radius:10px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;font-family:'Poppins',sans-serif;font-size:.9rem;"></div>
+
+<script>
+  document.getElementById('page-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Storage
+  const gB = () => JSON.parse(localStorage.getItem('nursery_batches') || '[]');
+  const sB = d => localStorage.setItem('nursery_batches', JSON.stringify(d));
+  const gF = () => JSON.parse(localStorage.getItem('nursery_ferts') || '[]');
+  const sF = d => localStorage.setItem('nursery_ferts', JSON.stringify(d));
+  const gW = () => JSON.parse(localStorage.getItem('nursery_water') || '[]');
+  const sW = d => localStorage.setItem('nursery_water', JSON.stringify(d));
+  const gI = () => JSON.parse(localStorage.getItem('nursery_inv') || '[]');
+  const sI = d => localStorage.setItem('nursery_inv', JSON.stringify(d));
+  const gT = () => JSON.parse(localStorage.getItem('nursery_tasks') || '[]');
+  const sT = d => localStorage.setItem('nursery_tasks', JSON.stringify(d));
+
+  function toast(msg) {
+    const el = document.getElementById('toast-el');
+    el.textContent = msg; el.style.transform='translateY(0)'; el.style.opacity='1';
+    setTimeout(()=>{el.style.transform='translateY(80px)';el.style.opacity='0';},2500);
+  }
+
+  // Seed demo data
+  function seed() {
+    if (!gB().length) sB([
+      {id:1,name:'Monstera Deliciosa',qty:40,stage:'Sapling',location:'Greenhouse A',sown:'2026-01-10',ready:'2026-04-10',notes:'Needs indirect light',progress:55},
+      {id:2,name:'Snake Plant',qty:80,stage:'Mature',location:'Shade Net B',sown:'2025-11-01',ready:'2026-03-01',notes:'Low water',progress:85},
+      {id:3,name:'Aloe Vera',qty:60,stage:'Ready to Sell',location:'Open Bed C',sown:'2025-09-15',ready:'2026-02-15',notes:'Harvest ready',progress:100},
+      {id:4,name:'Lavender',qty:30,stage:'Seedling',location:'Greenhouse A',sown:'2026-02-20',ready:'2026-06-20',notes:'Keep moist',progress:20},
+      {id:5,name:'Fiddle Leaf Fig',qty:15,stage:'Sapling',location:'Greenhouse B',sown:'2026-01-05',ready:'2026-05-05',notes:'Bright indirect sun',progress:45},
+    ]);
+    if (!gF().length) sF([
+      {id:1,name:'NPK 20-20-20',type:'Chemical',stock:30,lastApplied:'2026-03-01',due:'2026-03-15',plants:'All'},
+      {id:2,name:'Vermicompost',type:'Organic',stock:80,lastApplied:'2026-02-20',due:'2026-03-20',plants:'Monstera, Fern'},
+      {id:3,name:'Seaweed Extract',type:'Liquid',stock:10,lastApplied:'2026-03-05',due:'2026-03-19',plants:'Succulents'},
+      {id:4,name:'Bone Meal',type:'Organic',stock:5,lastApplied:'2026-02-10',due:'2026-03-10',plants:'Flowering plants'},
+    ]);
+    if (!gW().length) sW([
+      {id:1,batch:'Monstera Deliciosa',date:'2026-03-14',amount:'5L',method:'Drip',by:'Ravi'},
+      {id:2,batch:'Snake Plant',date:'2026-03-13',amount:'3L',method:'Manual',by:'Priya'},
+      {id:3,batch:'Aloe Vera',date:'2026-03-12',amount:'2L',method:'Manual',by:'Ravi'},
+      {id:4,batch:'Lavender',date:'2026-03-14',amount:'4L',method:'Sprinkler',by:'Suresh'},
+    ]);
+    if (!gI().length) sI([
+      {id:1,name:'Coco Peat',category:'Soil',qty:120,unit:'kg'},
+      {id:2,name:'Perlite',category:'Soil',qty:40,unit:'kg'},
+      {id:3,name:'NPK Fertilizer',category:'Fertilizer',qty:30,unit:'kg'},
+      {id:4,name:'Plastic Pots 6"',category:'Pots',qty:200,unit:'pcs'},
+      {id:5,name:'Grow Bags',category:'Pots',qty:80,unit:'pcs'},
+      {id:6,name:'Pruning Shears',category:'Tools',qty:8,unit:'pcs'},
+      {id:7,name:'Neem Oil',category:'Pesticide',qty:5,unit:'L'},
+    ]);
+    if (!gT().length) sT([
+      {id:1,name:'Repot Monstera batch (40 plants)',priority:'High',due:'2026-03-16',assign:'Ravi',done:false},
+      {id:2,name:'Apply NPK to all beds',priority:'High',due:'2026-03-15',assign:'Priya',done:false},
+      {id:3,name:'Check for pests in Greenhouse A',priority:'Medium',due:'2026-03-17',assign:'Suresh',done:false},
+      {id:4,name:'Order new Coco Peat stock',priority:'Medium',due:'2026-03-18',assign:'Admin',done:true},
+      {id:5,name:'Harvest Aloe Vera batch',priority:'Low',due:'2026-03-20',assign:'Ravi',done:false},
+    ]);
+  }
+  seed();
+
+  const titles = {overview:'Nursery Overview',plants:'Plant Batches',fertilizer:'Fertilizer Management',watering:'Watering Log',inventory:'Inventory',tasks:'Task Manager'};
+  function show(name, btn) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('sec-'+name).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('page-title').textContent = titles[name];
+    const fn = {overview:renderOverview,plants:renderBatches,fertilizer:renderFerts,watering:renderWater,inventory:renderInv,tasks:renderTasks};
+    if(fn[name]) fn[name]();
+  }
+
+  // ── OVERVIEW ──
+  function renderOverview() {
+    const batches=gB(), ferts=gF(), inv=gI(), tasks=gT();
+    const totalPlants=batches.reduce((s,b)=>s+b.qty,0);
+    const readyToSell=batches.filter(b=>b.stage==='Ready to Sell').reduce((s,b)=>s+b.qty,0);
+    const pending=tasks.filter(t=>!t.done).length;
+    const lowStock=inv.filter(i=>i.qty<15).length;
+    document.getElementById('stats-grid').innerHTML=`
+      <div class="stat-card"><div class="stat-icon" style="background:#d8f3dc;">🌿</div><div class="stat-info"><h3>${totalPlants}</h3><p>Total Plants</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dbeafe;">🛒</div><div class="stat-info"><h3>${readyToSell}</h3><p>Ready to Sell</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fef9c3;">✅</div><div class="stat-info"><h3>${pending}</h3><p>Pending Tasks</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#ede9fe;">⚠️</div><div class="stat-info"><h3>${lowStock}</h3><p>Low Stock Items</p></div></div>`;
+    const todayT=tasks.filter(t=>!t.done).slice(0,5);
+    document.getElementById('today-tasks').innerHTML=todayT.length===0
+      ?'<p style="color:#6b7280;font-size:.9rem;">All tasks done! 🎉</p>'
+      :todayT.map(t=>`<div style="display:flex;align-items:center;gap:.8rem;padding:.6rem 0;border-bottom:1px solid #f0f0f0;">
+          <span>${t.priority==='High'?'🔴':t.priority==='Medium'?'🟡':'🟢'}</span>
+          <div><div style="font-size:.9rem;font-weight:500;">${t.name}</div><div style="font-size:.78rem;color:#6b7280;">Due: ${t.due} · ${t.assign}</div></div>
+        </div>`).join('');
+    const alerts=[];
+    inv.filter(i=>i.qty<15).forEach(i=>alerts.push(`⚠️ Low stock: <b>${i.name}</b> (${i.qty} ${i.unit} left)`));
+    batches.filter(b=>b.stage==='Ready to Sell').forEach(b=>alerts.push(`🛒 Ready to sell: <b>${b.name}</b> (${b.qty} plants)`));
+    ferts.filter(f=>f.stock<8).forEach(f=>alerts.push(`🧪 Low fertilizer: <b>${f.name}</b> (${f.stock} kg)`));
+    document.getElementById('alerts').innerHTML=alerts.length===0
+      ?'<p style="color:#6b7280;font-size:.9rem;">No alerts ✅</p>'
+      :alerts.map(a=>`<div style="padding:.5rem .8rem;background:#fef9c3;border-radius:8px;font-size:.85rem;margin-bottom:.4rem;">${a}</div>`).join('');
+  }
+
+  // ── BATCHES ──
+  const stageColor={Seed:'badge-blue',Seedling:'badge-yellow',Sapling:'badge-green',Mature:'badge-purple','Ready to Sell':'badge-green'};
+  function renderBatches() {
+    const batches=gB();
+    document.getElementById('batches-grid').innerHTML=batches.length===0
+      ?'<p style="color:#6b7280;">No batches yet.</p>'
+      :batches.map(b=>`
+        <div class="grow-card">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div style="font-weight:700;">🌿 ${b.name}</div>
+            <span class="badge ${stageColor[b.stage]||'badge-green'}">${b.stage}</span>
+          </div>
+          <div style="font-size:.82rem;color:#6b7280;">📍 ${b.location} &nbsp;|&nbsp; Qty: <b>${b.qty}</b></div>
+          <div style="font-size:.82rem;color:#6b7280;">📅 ${b.sown} → ${b.ready}</div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:#6b7280;"><span>Growth</span><span>${b.progress}%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:${b.progress}%;background:${b.progress>=100?'#16a34a':'#2d6a4f'};"></div></div>
+          </div>
+          ${b.notes?`<div style="font-size:.82rem;color:#6b7280;">📝 ${b.notes}</div>`:''}
+          <div style="display:flex;gap:.5rem;margin-top:.3rem;">
+            <button class="btn btn-yellow" style="flex:1;" onclick="openEditBatch(${b.id})">✏️ Edit</button>
+            <button class="btn btn-red" style="flex:1;" onclick="delBatch(${b.id})">🗑 Delete</button>
+          </div>
+        </div>`).join('');
+  }
+  function openBatch() {
+    document.getElementById('batch-title').textContent='Add Plant Batch';
+    document.getElementById('batch-edit-id').value='';
+    ['b-name','b-qty','b-loc','b-sown','b-ready','b-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('b-stage').value='Seedling';
+    document.getElementById('batch-modal').classList.add('open');
+  }
+  function openEditBatch(id) {
+    const b=gB().find(x=>x.id===id); if(!b) return;
+    document.getElementById('batch-title').textContent='Edit Batch';
+    document.getElementById('batch-edit-id').value=b.id;
+    document.getElementById('b-name').value=b.name;
+    document.getElementById('b-qty').value=b.qty;
+    document.getElementById('b-stage').value=b.stage;
+    document.getElementById('b-loc').value=b.location;
+    document.getElementById('b-sown').value=b.sown;
+    document.getElementById('b-ready').value=b.ready;
+    document.getElementById('b-notes').value=b.notes||'';
+    document.getElementById('batch-modal').classList.add('open');
+  }
+  function closeBatch(){document.getElementById('batch-modal').classList.remove('open');}
+  function saveBatch() {
+    const name=document.getElementById('b-name').value.trim();
+    const qty=parseInt(document.getElementById('b-qty').value);
+    if(!name||!qty){toast('Name and quantity required!');return;}
+    const batches=gB();
+    const editId=document.getElementById('batch-edit-id').value;
+    const sp={'Seed':5,'Seedling':20,'Sapling':50,'Mature':80,'Ready to Sell':100};
+    const stage=document.getElementById('b-stage').value;
+    const data={name,qty,stage,location:document.getElementById('b-loc').value,sown:document.getElementById('b-sown').value,ready:document.getElementById('b-ready').value,notes:document.getElementById('b-notes').value,progress:sp[stage]||50};
+    if(editId){const i=batches.findIndex(b=>b.id===parseInt(editId));if(i>-1)batches[i]={...batches[i],...data};}
+    else{data.id=Date.now();batches.push(data);}
+    sB(batches);closeBatch();renderBatches();toast('Batch saved!');
+  }
+  function delBatch(id){if(!confirm('Delete?'))return;sB(gB().filter(b=>b.id!==id));renderBatches();toast('Deleted.');}
+
+  // ── FERTILIZER ──
+  function renderFerts() {
+    const ferts=gF();
+    document.getElementById('fert-tbody').innerHTML=ferts.length===0
+      ?'<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:2rem;">No fertilizers added.</td></tr>'
+      :ferts.map(f=>{
+        const overdue=new Date(f.due)<new Date();
+        return`<tr>
+          <td style="font-weight:600;">${f.name}</td>
+          <td><span class="badge ${f.type==='Organic'?'badge-green':f.type==='Chemical'?'badge-red':'badge-blue'}">${f.type}</span></td>
+          <td style="font-weight:700;color:${f.stock<8?'#dc2626':'#2d6a4f'};">${f.stock} kg</td>
+          <td style="font-size:.85rem;">${f.lastApplied||'-'}</td>
+          <td style="font-size:.85rem;color:${overdue?'#dc2626':'inherit'};font-weight:${overdue?700:400};">${f.due}${overdue?' ⚠️':''}</td>
+          <td style="font-size:.82rem;">${f.plants}</td>
+          <td><button class="btn btn-red" onclick="delFert(${f.id})">🗑</button></td>
+        </tr>`;}).join('');
+  }
+  function openFert(){['f-name','f-stock','f-due','f-plants'].forEach(id=>document.getElementById(id).value='');document.getElementById('fert-modal').classList.add('open');}
+  function closeFert(){document.getElementById('fert-modal').classList.remove('open');}
+  function saveFert(){
+    const name=document.getElementById('f-name').value.trim();
+    if(!name){toast('Name required!');return;}
+    const ferts=gF();
+    ferts.push({id:Date.now(),name,type:document.getElementById('f-type').value,stock:parseFloat(document.getElementById('f-stock').value)||0,lastApplied:new Date().toISOString().split('T')[0],due:document.getElementById('f-due').value,plants:document.getElementById('f-plants').value||'All'});
+    sF(ferts);closeFert();renderFerts();toast('Fertilizer added!');
+  }
+  function delFert(id){if(!confirm('Delete?'))return;sF(gF().filter(f=>f.id!==id));renderFerts();}
+
+  // ── WATERING ──
+  function renderWater(){
+    // Populate batch dropdown
+    const batches=gB();
+    const sel=document.getElementById('w-batch');
+    if(sel){
+      sel.innerHTML=batches.length===0
+        ?'<option>No batches added</option>'
+        :batches.map(b=>`<option>${b.name}</option>`).join('');
+    }
+    const logs=gW();
+    document.getElementById('water-list').innerHTML=logs.length===0
+      ?'<p style="color:#6b7280;font-size:.9rem;text-align:center;padding:1rem;">No watering logs yet. Add one above!</p>'
+      :[...logs].reverse().map(w=>`
+        <div class="schedule-item">
+          <div style="width:44px;height:44px;background:#d8f3dc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">💧</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;">${w.batch}</div>
+            <div style="font-size:.82rem;color:#6b7280;">${w.date} &nbsp;|&nbsp; ${w.amount} &nbsp;|&nbsp; ${w.method} &nbsp;|&nbsp; By: ${w.by}</div>
+          </div>
+          <button class="btn btn-red" onclick="delWater(${w.id})">🗑</button>
+        </div>`).join('');
+  }
+  function logWater(){
+    const batch=document.getElementById('w-batch').value;
+    const amount=document.getElementById('w-amount').value.trim()||'5L';
+    const method=document.getElementById('w-method').value;
+    const by=document.getElementById('w-by').value.trim()||'Staff';
+    if(!batch||batch==='No batches added'){toast('Add plant batches first!');return;}
+    const logs=gW();
+    logs.push({id:Date.now(),batch,date:new Date().toISOString().split('T')[0],amount,method,by});
+    sW(logs);
+    document.getElementById('w-amount').value='';
+    document.getElementById('w-by').value='';
+    renderWater();
+    toast('Watering logged! 💧');
+  }
+  function delWater(id){sW(gW().filter(w=>w.id!==id));renderWater();}
+
+  // ── INVENTORY ──
+  const catEmoji={Soil:'🪨',Fertilizer:'🧪',Tools:'🔧',Pots:'🪴',Pesticide:'🐛',Other:'📦'};
+  function renderInv(){
+    const inv=gI();
+    document.getElementById('inv-grid').innerHTML=inv.map(i=>`
+      <div class="inv-card">
+        <div style="font-size:1.8rem;">${catEmoji[i.category]||'📦'}</div>
+        <div style="font-weight:700;margin:.3rem 0;">${i.name}</div>
+        <div style="font-size:.8rem;color:#6b7280;">${i.category}</div>
+        <div style="font-size:1.2rem;font-weight:700;color:${i.qty<15?'#dc2626':'#2d6a4f'};margin:.4rem 0;">${i.qty} <span style="font-size:.8rem;font-weight:400;">${i.unit||''}</span></div>
+        ${i.qty<15?'<div style="font-size:.75rem;color:#dc2626;">⚠️ Low Stock</div>':''}
+        <div style="display:flex;gap:.4rem;margin-top:.6rem;">
+          <button class="btn btn-green" style="flex:1;padding:5px;" onclick="adjInv(${i.id},1)">+</button>
+          <button class="btn btn-yellow" style="flex:1;padding:5px;" onclick="adjInv(${i.id},-1)">−</button>
+          <button class="btn btn-red" style="flex:1;padding:5px;" onclick="delInv(${i.id})">🗑</button>
+        </div>
+      </div>`).join('');
+  }
+  function addInv(){
+    const name=document.getElementById('inv-name').value.trim();
+    const qty=parseInt(document.getElementById('inv-qty').value);
+    if(!name||!qty){toast('Name and quantity required!');return;}
+    const inv=gI();
+    const ex=inv.find(i=>i.name.toLowerCase()===name.toLowerCase());
+    if(ex){ex.qty+=qty;}else{inv.push({id:Date.now(),name,category:document.getElementById('inv-cat').value,qty,unit:'pcs'});}
+    sI(inv);document.getElementById('inv-name').value='';document.getElementById('inv-qty').value='';renderInv();toast('Updated!');
+  }
+  function adjInv(id,d){const inv=gI();const i=inv.find(x=>x.id===id);if(i)i.qty=Math.max(0,i.qty+d);sI(inv);renderInv();}
+  function delInv(id){if(!confirm('Remove?'))return;sI(gI().filter(i=>i.id!==id));renderInv();}
+
+  // ── TASKS ──
+  const pColor={High:'badge-red',Medium:'badge-yellow',Low:'badge-green'};
+  function renderTasks(){
+    const tasks=gT();
+    const pending=tasks.filter(t=>!t.done);
+    const done=tasks.filter(t=>t.done);
+    const renderGroup=(list,label)=>list.length===0?'':
+      `<div style="font-weight:600;color:#6b7280;font-size:.8rem;margin:.8rem 0 .4rem;text-transform:uppercase;letter-spacing:.05em;">${label}</div>`+
+      list.map(t=>`
+        <div style="background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(45,106,79,.08);padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;margin-bottom:.6rem;${t.done?'opacity:.6':''}">
+          <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${t.id})" style="width:18px;height:18px;accent-color:#2d6a4f;cursor:pointer;" />
+          <div style="flex:1;">
+            <div style="font-weight:${t.done?400:600};text-decoration:${t.done?'line-through':'none'};">${t.name}</div>
+            <div style="font-size:.78rem;color:#6b7280;">Due: ${t.due} &nbsp;|&nbsp; 👤 ${t.assign}</div>
+          </div>
+          <span class="badge ${pColor[t.priority]||'badge-green'}">${t.priority}</span>
+          <button class="btn btn-red" style="padding:5px 10px;" onclick="delTask(${t.id})">🗑</button>
+        </div>`).join('');
+    document.getElementById('tasks-list').innerHTML=renderGroup(pending,'Pending')+renderGroup(done,'Completed');
+  }
+  function openTask(){['t-name','t-due','t-assign'].forEach(id=>document.getElementById(id).value='');document.getElementById('task-modal').classList.add('open');}
+  function closeTask(){document.getElementById('task-modal').classList.remove('open');}
+  function saveTask(){
+    const name=document.getElementById('t-name').value.trim();
+    if(!name){toast('Task name required!');return;}
+    const tasks=gT();
+    tasks.push({id:Date.now(),name,priority:document.getElementById('t-priority').value,due:document.getElementById('t-due').value,assign:document.getElementById('t-assign').value||'Unassigned',done:false});
+    sT(tasks);closeTask();renderTasks();toast('Task added!');
+  }
+  function toggleTask(id){const tasks=gT();const t=tasks.find(t=>t.id===id);if(t)t.done=!t.done;sT(tasks);renderTasks();}
+  function delTask(id){if(!confirm('Delete?'))return;sT(gT().filter(t=>t.id!==id));renderTasks();}
+
+  ['batch-modal','fert-modal','task-modal'].forEach(id=>{
+    document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+  });
+
+  renderOverview();
+</script>
+</body>
+</html>

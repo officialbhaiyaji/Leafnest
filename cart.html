@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart – LeafNest</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="leaf">🌿</span><span>LeafNest</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#products">Plants</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="location.href='cart.html'">🛒 Cart <span class="cart-count">0</span></button>
+    <span id="nav-user-area"></span>
+  </div>
+</nav>
+
+<div class="page-container">
+  <div class="page-title">🛒 Your Cart</div>
+  <div id="cart-content"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="data.js"></script>
+<script>
+  // Auth guard — redirect to login if not logged in
+  if (!getCurrentUser()) {
+    location.replace('login.html?redirect=cart.html');
+  }
+
+  updateCartCount();
+
+  const user = getCurrentUser();
+  const navArea = document.getElementById('nav-user-area');
+  if (user) {
+    navArea.innerHTML = `<span style="font-size:.9rem;color:var(--green);font-weight:500">Hi, ${user.name.split(' ')[0]}</span>
+    <button class="btn-nav-login" style="margin-left:.5rem" onclick="localStorage.removeItem('plantstore_current_user');location.reload()">Logout</button>`;
+  } else {
+    navArea.innerHTML = `<a href="login.html" class="btn-nav-login">Login</a>`;
+  }
+
+  function renderCart() {
+    const cart = getCart();
+    const el = document.getElementById('cart-content');
+    if (cart.length === 0) {
+      el.innerHTML = `<div class="empty-cart"><div class="icon">🛒</div><h3>Your cart is empty</h3><p style="margin:.5rem 0 1.5rem">Add some plants to get started!</p><a href="index.html" class="btn-primary">Browse Plants</a></div>`;
+      return;
+    }
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const shipping = subtotal >= 999 ? 0 : 99;
+    const total = subtotal + shipping;
+
+    el.innerHTML = `
+      <div class="cart-layout">
+        <div class="cart-items" id="cart-items-list"></div>
+        <div class="cart-summary">
+          <h3>Order Summary</h3>
+          <div class="summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+          <div class="summary-row"><span>Shipping</span><span>${shipping === 0 ? '<span style="color:var(--green)">Free</span>' : '₹' + shipping}</span></div>
+          ${shipping > 0 ? `<div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem">Add ₹${999 - subtotal} more for free shipping</div>` : ''}
+          <div class="summary-row total"><span>Total</span><span>₹${total}</span></div>
+          <button class="btn-full" style="margin-top:1rem" onclick="goCheckout()">Proceed to Checkout →</button>
+          <a href="index.html" style="display:block;text-align:center;margin-top:.8rem;color:var(--text-muted);font-size:.88rem;text-decoration:none">← Continue Shopping</a>
+        </div>
+      </div>`;
+
+    document.getElementById('cart-items-list').innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <div class="cart-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.parentElement.innerHTML='${item.emoji||'🌿'}'" />` : (item.emoji || '🌿')}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-price">₹${item.price} each</div>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+            <span style="font-size:.85rem;color:var(--text-muted);margin-left:4px">= ₹${item.price * item.qty}</span>
+          </div>
+        </div>
+        <button class="btn-remove" onclick="removeItem(${item.id})">🗑 Remove</button>
+      </div>
+    `).join('');
+  }
+
+  function changeQty(id, delta) {
+    const cart = getCart();
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) { removeItem(id); return; }
+    saveCart(cart);
+    updateCartCount();
+    renderCart();
+  }
+
+  function removeItem(id) {
+    const cart = getCart().filter(i => i.id !== id);
+    saveCart(cart);
+    updateCartCount();
+    renderCart();
+    showToast('Item removed from cart');
+  }
+
+  function goCheckout() {
+    const user = getCurrentUser();
+    if (!user) { location.href = 'login.html?redirect=checkout.html'; return; }
+    location.href = 'checkout.html';
+  }
+
+  renderCart();
+</script>
+</body>
+</html>
